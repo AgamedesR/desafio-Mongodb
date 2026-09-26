@@ -84,3 +84,54 @@ def get_sqlite_conn() -> sqlite3.Connection:
         conn.commit()
 
     return conn
+
+def buscar_veiculos_por_raio(collection, lon: float, lat: float, raio_km: float):
+    raio_radianos = raio_km / RAIO_TERRA_KM
+    query = {
+        "location": {
+            "$geoWithin": {
+                "$centerSphere": [[lon, lat], raio_radianos]
+            }
+        }
+    }
+    return list(collection.find(query))
+
+def render_mapa(veiculos_no_raio, centro_lat: float, centro_lon: float, raio_km: float):
+    mapa = folium.Map(location=[centro_lat, centro_lon], zoom_start=12)
+
+    folium.Marker(
+        [centro_lat, centro_lon],
+        tooltip="Ponto de referência",
+        icon=folium.Icon(color="blue", icon="flag"),
+    ).add_to(mapa)
+
+    folium.Circle(
+        location=[centro_lat, centro_lon],
+        radius=raio_km * 1000,  # folium.Circle usa metros, não km
+        color="blue",
+        fill=True,
+        fill_opacity=0.1,
+    ).add_to(mapa)
+
+    for doc in veiculos_no_raio:
+        lon, lat = doc["location"]["coordinates"]
+        cor = "red" if doc.get("velocidade", 0) > 80 else "green"
+        folium.Marker(
+            [lat, lon],
+            tooltip=(
+                f"Veículo {doc['veiculo_id']} | "
+                f"{doc.get('temperatura')}°C | {doc.get('velocidade')} km/h"
+            ),
+            icon=folium.Icon(color=cor, icon="truck", prefix="fa"),
+        ).add_to(mapa)
+
+    st_folium(mapa, width=None, height=500, key="mapa_geo")
+
+if __name__ == "__main__":
+    st.title("Teste Módulo 2")
+    conn = get_sqlite_conn()
+    col = get_mongo_collection()
+
+    veiculos = buscar_veiculos_por_raio(col, lon=-34.873, lat=-7.115, raio_km=10)
+    st.write(f"{len(veiculos)} veículo(s) encontrado(s)")
+    render_mapa(veiculos, centro_lat=-7.115, centro_lon=-34.873, raio_km=10)
