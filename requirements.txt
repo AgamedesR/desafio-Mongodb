@@ -1,0 +1,6 @@
+streamlit
+pymongo
+folium
+streamlit-folium
+plotly
+pandas
