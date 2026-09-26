@@ -1,6 +1,8 @@
 # GeoLog — Plataforma de Telemetria Logística (Persistência Poliglota)
 
-Desafio Integrador — Tópicos Avançados em Banco de Dados / Arquitetura de Software (UNIPÊ).
+Desafio Integrador — Implementação e Geren. Bancos de Dados NoSQL (UNIPÊ).
+
+**Grupo:** Agamedes Rodrigues, Lielson Marques
 
 ## Arquitetura
 
